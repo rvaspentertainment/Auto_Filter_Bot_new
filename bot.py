@@ -20,6 +20,7 @@ from dreamxbotz.Bot import dreamxbotz
 from dreamxbotz.util.keepalive import ping_server
 from dreamxbotz.Bot.clients import initialize_clients
 from PIL import Image
+import asyncio 
 Image.MAX_IMAGE_PIXELS = 500_000_000
 
 import logging
@@ -36,6 +37,16 @@ logging.getLogger("pymongo").setLevel(logging.WARNING)
 botStartTime = time.time()
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
+
+async def keep_alive_ping():
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("https://auto-filter-bot-new-nqpq.onrender.com") as resp:  # Replace with your real app URL
+                    print(f"Pinged self: {resp.status}")
+        except Exception as e:
+            print(f"Ping error: {e}")
+        await asyncio.sleep(60)
 
 async def dreamxbotz_start():
     print('\n\nInitalizing DreamxBotz')
@@ -84,7 +95,7 @@ async def dreamxbotz_start():
     await app.setup()
     bind_address = "0.0.0.0"
     await web.TCPSite(app, bind_address, PORT).start()
-    dreamxbotz.loop.create_task(keep_alive())
+    asyncio.create_task(keep_alive_ping())
     await idle()
     
 if __name__ == '__main__':
