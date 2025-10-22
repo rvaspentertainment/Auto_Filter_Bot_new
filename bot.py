@@ -38,15 +38,18 @@ botStartTime = time.time()
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
 
-async def keep_alive_ping():
+import asyncio, aiohttp
+
+async def ping():
     while True:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://auto-filter-bot-new-nqpq.onrender.com") as resp:  # Replace with your real app URL
-                    print(f"Pinged self: {resp.status}")
+                async with session.get("https://auto-filter-bot-new-nqpq.onrender.com") as resp:
+                    print(f"Pinged main app: {resp.status}")
         except Exception as e:
             print(f"Ping error: {e}")
-        await asyncio.sleep(60)
+        await asyncio.sleep(15)
+
 
 async def dreamxbotz_start():
     print('\n\nInitalizing DreamxBotz')
