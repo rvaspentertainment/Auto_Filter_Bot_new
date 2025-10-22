@@ -40,16 +40,25 @@ files = glob.glob(ppath)
 
 import asyncio, aiohttp
 
+PING_URL = os.getenv("PING_URL", "https://auto-filter-bot-new-nqpq.onrender.com")
+url = f"{PING_URL}/health"  # If you have a health check endpointAdd exponential backoff for repeated failures:
+
 async def ping():
+    url = "https://auto-filter-bot-new-nqpq.onrender.com"
+    retry_delay = 300  # Start with 5 minutes
+    max_delay = 900  # Max 15 minutes
+    
     while True:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get("https://auto-filter-bot-new-nqpq.onrender.com") as resp:
-                    print(f"Pinged main app: {resp.status}")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
+                async with session.get(url) as resp:
+                    print(f"✓ Ping successful: {resp.status}")
+                    retry_delay = 300  # Reset delay on success
         except Exception as e:
-            print(f"Ping error: {e}")
-        await asyncio.sleep(15)
-
+            print(f"⚠ Ping error: {e}")
+            retry_delay = min(retry_delay * 1.5, max_delay)  # Exponential backoff
+        
+        await asyncio.sleep(retry_delay)
 
 async def dreamxbotz_start():
     print('\n\nInitalizing DreamxBotz')
